@@ -1,0 +1,151 @@
+Sub Years()
+
+'For each worksheet perform the following actions.
+    Dim ws As Worksheet
+    For Each ws In Sheets
+    
+'Placing titles on top of each specific column.
+        ws.Range("I1,P1").Value = "Ticker"
+        ws.Range("J1").Value = "Yearly Change"
+        ws.Range("K1").Value = "Percent Change"
+        ws.Range("L1").Value = "Total Stock Volume"
+        ws.Range("Q1").Value = "Value"
+        ws.Range("O2").Value = "Greatest % Increase"
+        ws.Range("O3").Value = "Greatest % Decrease"
+        ws.Range("O4").Value = "Greatest Total Volume"
+
+'Defining variables.
+        Dim lastrow As Long
+        Dim nrow As Integer
+        Dim openvalue As Double
+        Dim closevalue As Double
+        Dim yearlychange As Double
+        Dim sum_stock_volume As LongPtr
+        Dim maxchange As Double
+        Dim minchange As Double
+        Dim maxvolume As LongPtr
+        Dim itsticker1 As String
+        Dim itsticker2 As String
+        Dim itsticker3 As String
+        
+        
+        lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+        nrow = 2
+        sum_stock_volume = 0
+        maxchange = 0
+        minchange = 0
+        maxvolume = 0
+        
+'First loop corresponds to finding and replacing in column I each new ticker in the first column.
+        For a = 2 To lastrow
+        
+            If ws.Cells(a, 1).Value <> ws.Cells(a + 1, 1).Value Then
+                ws.Range("I" & nrow).Value = ws.Cells(a, 1).Value
+                nrow = nrow + 1
+            End If
+        
+        Next a
+        
+        
+'Second loop corresponds to the yearly change and percent change columns respectively. The loop analyze the first, third and sixth column to find each open and close
+'value from the first and last date respectively. Then calculates and place them in their corresponding columns for each ticker.
+        nrow = 2
+        
+        For b = 2 To lastrow
+        
+            If ws.Cells(b - 1, 1).Value <> ws.Cells(b, 1).Value Then
+                 openvalue = ws.Cells(b, 3).Value
+            
+            ElseIf ws.Cells(b + 1, 1).Value <> ws.Cells(b, 1).Value Then
+                closevalue = ws.Cells(b, 6).Value
+                yearlychange = closevalue - openvalue                     'Calculates the yearly change by substracting the close value minus the open value.
+                ws.Range("J" & nrow).Value = yearlychange
+                ws.Range("k" & nrow).Value = yearlychange / openvalue     'Calculates the percent change by dividing the yearly change previously
+                nrow = nrow + 1                                           'calculated with the open value.
+            End If
+            
+        Next b
+        
+  
+'The third loop calculates the sum of the total stock volume for each ticker.
+        nrow = 2
+        
+        For c = 2 To lastrow
+        
+            If ws.Cells(c + 1, 1).Value = ws.Cells(c, 1).Value Then
+                sum_stock_volume = sum_stock_volume + ws.Cells(c, 7).Value  'Add each new value to the variable sum_stock_volume to calculate the sum.
+                
+                
+            ElseIf ws.Cells(c + 1, 1).Value <> ws.Cells(c, 1).Value Then
+                sum_stock_volume = sum_stock_volume + ws.Cells(c, 7).Value  'Add the last value for that ticker.
+                ws.Range("L" & nrow).Value = sum_stock_volume               'Place the sum_stock_volume variable in its corresponding column
+                nrow = nrow + 1
+                sum_stock_volume = 0                                        'Resets the variable to 0 to start summing the next ticker.
+            End If
+        
+        Next c
+        
+        
+'The fourth loop finds the max/min values from the percent change column and the max value from total stock volume column.
+        For d = 2 To lastrow
+                
+            If ws.Cells(d, 11).Value > maxchange Then  'Find max value in the percent change column and place with its corresponding ticker.
+                maxchange = ws.Cells(d, 11).Value
+                itsticker1 = ws.Cells(d, 9).Value
+            End If
+                
+            If ws.Cells(d, 11).Value < minchange Then  'Find min value in the percent change column and place with its corresponding ticker.
+                minchange = ws.Cells(d, 11).Value
+                itsticker2 = ws.Cells(d, 9).Value
+            End If
+                
+            If ws.Cells(d, 12).Value > maxvolume Then  'Find max value in the total stock volume column and place with its corresponding ticker.
+                maxvolume = ws.Cells(d, 12).Value
+                itsticker3 = ws.Cells(d, 9).Value
+            End If
+            
+        Next d
+
+'Values found in the previous loop are placed in their corresponding columns and converted into percentages if necessary.
+        ws.Range("Q2").Value = Format(maxchange, "#.##%")
+        ws.Range("Q3").Value = Format(minchange, "#.##%")
+        ws.Range("Q4").Value = maxvolume
+        ws.Range("P2").Value = itsticker1
+        ws.Range("P3").Value = itsticker2
+        ws.Range("P4").Value = itsticker3
+        
+        
+'The fifth loop colors each cell in the yearly change and percent change columns either green or red if they are greater or lower than 0 respectively.
+        For e = 2 To lastrow
+            
+            If ws.Cells(e, 10).Value > 0 Then
+                ws.Cells(e, 10).Interior.Color = vbGreen  'interior color of the cell is green.
+                    
+            Else
+                ws.Cells(e, 10).Interior.Color = vbRed    'interior color of the cell is red.
+            End If
+                
+                
+            If ws.Cells(e, 11) > 0 Then
+                ws.Cells(e, 11).Interior.Color = vbGreen   'interior color of the cell is green.
+                    
+            Else
+                ws.Cells(e, 11).Interior.Color = vbRed   'interior color of the cell is red.
+            End If
+                
+        Next e
+        
+        
+'The sixth and last loop converts the values in the percent change column into percentages.
+        For f = 2 To lastrow
+        
+            ws.Cells(f, 11).Value = Format((ws.Cells(f, 11).Value), "#.##%")
+
+        Next f
+        
+        
+    Next ws
+
+End Sub
+
+
